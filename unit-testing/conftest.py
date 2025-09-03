@@ -1,4 +1,4 @@
-# tests/conftest.py
+# unit-testing/conftest.py
 import pytest
 import pandas as pd
 from datetime import date
@@ -20,7 +20,7 @@ def raw_data_dict() -> dict:
 
 @pytest.fixture
 def sample_dataframe(raw_data_dict) -> pd.DataFrame:
-    """Provides a cleaned DataFrame based on the user's data for use in tests."""
+    """Provides a cleaned DataFrame based on the user's data for use in unit-testing."""
     df = pd.DataFrame(raw_data_dict)
     # Perform the same cleaning steps as in the application
     df['Account'] = df['Account'].apply(lambda x: str(int(x)) if pd.notna(x) and isinstance(x, float) and x.is_integer() else str(x))

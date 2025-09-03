@@ -382,34 +382,6 @@ def list_jobs():
     })
 
 
-# @app.route('/api/job/<job_id>', methods=['DELETE'])
-# def delete_job(job_id):
-#     """Delete a job and its associated data"""
-#     job = ProcessingJob.query.get(job_id)
-#     if not job:
-#         return jsonify({'error': 'Job not found'}), 404
-#
-#     try:
-#         # Delete files
-#         input_files = Path(app.config['UPLOAD_FOLDER']).glob(f"{job_id}_*")
-#         for file in input_files:
-#             file.unlink(missing_ok=True)
-#
-#         if job.output_file:
-#             output_path = Path(app.config['OUTPUT_FOLDER']) / job.output_file
-#             output_path.unlink(missing_ok=True)
-#
-#         # Delete database records (cascade will handle related records)
-#         db.session.delete(job)
-#         db.session.commit()
-#
-#         return jsonify({'message': 'Job deleted successfully'}), 200
-#     except Exception as e:
-#         logger.error(f"Delete error: {str(e)}")
-#         db.session.rollback()
-#         return jsonify({'error': f'Failed to delete job: {str(e)}'}), 500
-
-
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""

@@ -30,28 +30,35 @@ def load_and_clean(file_path: str, required_columns: list) -> pd.DataFrame:
     df = df[df['Account'].notna() & (df['Account'] != '') & (df['Account'] != 'nan')]
     df['Document Date'] = pd.to_datetime(df['Document Date'], errors='coerce').dt.date
     df = df.dropna(subset=['Document Date'])
+    # --debugging
+    print("Accounts in cleaned DF:", df['Account'].unique(), len(df['Account'].unique()))
+
     return df
 
 
 @handle_exceptions
 @log_step
 def summarize_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, pd.DataFrame]]:
-    '''
-        Summarizes data by grouping and splitting by account:
+    """
+    Summarizes data by grouping and splitting by account.
 
-        :param df: Cleaned DataFrame with required columns.
-        :return: Tuple of (summary DataFrame, dict of account DataFrames).
-    '''
+    :param df: Cleaned DataFrame with required columns.
+    :return: Tuple of (summary DataFrame, dict of account DataFrames).
+    """
     summary_df = df.groupby(
-        ['Comapany', 'Account', 'Document currency', 'Local Currency']
+        ['Account']
     )[['Amount in doc. curr.', 'Amount in local currency']].sum().reset_index()
 
     accounts = df['Account'].unique()
     account_data_dict = {acc: df[df['Account'] == acc].copy() for acc in accounts}
 
     # Drop 'Entry Date' if exists
-    for acc_df in account_data_dict.values():
-        if 'Entry Date' in acc_df.columns:
-            acc_df.drop(columns=['Entry Date'], inplace=True)
+    for acc in account_data_dict:
+        if 'Entry Date' in account_data_dict[acc].columns:
+            account_data_dict[acc] = account_data_dict[acc].drop(columns=['Entry Date'])
+
+    # --debugging
+    print("Unique accounts in summary:", summary_df['Account'].nunique())
+    print("Total rows in summary:", len(summary_df))
 
     return summary_df, account_data_dict
