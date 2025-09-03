@@ -28,11 +28,26 @@ def load_and_clean(file_path: str, required_columns: list) -> pd.DataFrame:
         return pd.DataFrame()
 
     df['Account'] = df['Account'].apply(clean_account_value)
+
     df = df[df['Account'].notna() & (df['Account'] != '') & (df['Account'] != 'nan')]
-    df['Document Date'] = pd.to_datetime(df['Document Date'], errors='coerce').dt.date
+
+    df['Document Date'] = pd.to_datetime(df['Document Date'], errors='coerce', dayfirst=True).dt.date
+
+    # Check for accounts with invalid dates
+    accounts_with_all_invalid_dates = df.groupby('Account')['Document Date'].apply(lambda x: x.isna().all())
+    accounts_all_invalid = accounts_with_all_invalid_dates[accounts_with_all_invalid_dates].index.tolist()
+
+    if accounts_all_invalid:
+        print(f"Found {len(accounts_all_invalid)} accounts with ALL invalid dates: {accounts_all_invalid}")
+
+        valid_dates = df[df['Document Date'].notna()]['Document Date']
+        if len(valid_dates) > 0:
+            median_date = pd.to_datetime(valid_dates).median().date()
+            print(f"Setting median date ({median_date}) for accounts with invalid dates...")
+            mask = df['Account'].isin(accounts_all_invalid) & df['Document Date'].isna()
+            df.loc[mask, 'Document Date'] = median_date
+
     df = df.dropna(subset=['Document Date'])
-    # --debugging
-    print("Accounts in cleaned DF:", df['Account'].unique(), len(df['Account'].unique()))
 
     return df
 
@@ -55,7 +70,6 @@ def summarize_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, pd.DataFra
         'Local Currency': 'first'
     }
 
-    # Group by 'Account' ONLY, and apply the different rules using .agg()
     summary_df = df.groupby('Account').agg(agg_rules).reset_index()
 
     column_order = [

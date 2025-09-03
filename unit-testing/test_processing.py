@@ -25,16 +25,22 @@ def test_summarize_data_with_new_data(sample_dataframe):
         'Comapany': ['UN0100', 'UN0150', 'XT0150'],
         'Account': ['63010001', '63010502', '63010012'],
         'Document currency': ['USD', 'LKR', 'LKR'],
-        'Local Currency': ['USD', 'USD', 'USD'],
         'Amount in doc. curr.': [-500.0, 5000.0, 20000.0],
+        'Local Currency': ['USD', 'USD', 'USD'],
         'Amount in local currency': [-500.0, 27.0, 110.0]
     }
-    expected_summary_df = pd.DataFrame(expected_summary_data)
 
-    # Sort both dataframes to ensure a consistent comparison
+    # Ensure column order matches the actual summarize_data output
+    expected_summary_df = pd.DataFrame(expected_summary_data)[
+        ['Comapany', 'Account', 'Document currency', 'Amount in doc. curr.',
+         'Local Currency', 'Amount in local currency']
+    ]
+
+    # Sort both dataframes by 'Account' to ensure consistent comparison
     summary_df = summary_df.sort_values(by='Account').reset_index(drop=True)
     expected_summary_df = expected_summary_df.sort_values(by='Account').reset_index(drop=True)
 
+    # Compare DataFrames
     assert_frame_equal(summary_df, expected_summary_df)
 
     # Test account dictionary
