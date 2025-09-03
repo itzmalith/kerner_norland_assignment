@@ -1,0 +1,6 @@
+[project]
+name = "kerner_norland_automation_assignment"
+version = "0.1.0"
+
+[tool.setuptools]
+packages = ["src"]

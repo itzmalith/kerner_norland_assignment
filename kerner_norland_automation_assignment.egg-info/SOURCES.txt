@@ -1,0 +1,13 @@
+pyproject.toml
+kerner_norland_automation_assignment.egg-info/PKG-INFO
+kerner_norland_automation_assignment.egg-info/SOURCES.txt
+kerner_norland_automation_assignment.egg-info/dependency_links.txt
+kerner_norland_automation_assignment.egg-info/top_level.txt
+src/config.py
+src/main.py
+src/processing.py
+src/report_writer.py
+src/utils.py
+tests/test_processing.py
+tests/test_report_writer.py
+tests/test_utils.py

@@ -1,44 +1,44 @@
 import functools
+import logging
 from datetime import datetime
 import pandas as pd
-from typing import Any, Optional
+from typing import Any, Optional, Callable
+
+# Get a logger instance for this module
+logger = logging.getLogger(__name__)
 
 
-def log_step(func):
+def log_step(func: Callable) -> Callable:
     '''
     Decorator to log when a function starts and ends.
 
     :param func: Function to be wrapped.
     :return: Wrapped function with logging.
     '''
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        print(f"[INFO] Starting '{func.__name__}'...")
+        logger.info(f"Starting '{func.__name__}'...")
         result = func(*args, **kwargs)
-        print(f"[INFO] Finished '{func.__name__}'")
+        logger.info(f"Finished '{func.__name__}'.")
         return result
-
     return wrapper
 
 
-def handle_exceptions(func):
-
+def handle_exceptions(func: Callable) -> Callable:
     '''
     Decorator to catch and log exceptions in a function
 
     :param func:  Function to be wrapped.
     :return: Wrapped function that logs errors and returns None on exception.
     '''
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            print(f"[ERROR] Exception in {func.__name__}: {e}")
+            # Using exc_info=True provides a full traceback in the logs
+            logger.error(f"Exception in {func.__name__}: {e}", exc_info=True)
             return None
-
     return wrapper
 
 
@@ -50,7 +50,6 @@ def clean_account_value(x: Any) -> Optional[str]:
     :param x: Input account value which is originally in float format
     :return: Cleaned string or None if value is invalid
     '''
-
     if pd.isna(x):
         return None
     try:
@@ -62,7 +61,6 @@ def clean_account_value(x: Any) -> Optional[str]:
 
 
 def validate_columns(df: pd.DataFrame, required_columns: list) -> bool:
-
     '''
     Validates if required columns are present in the DataFrame
 
@@ -70,10 +68,9 @@ def validate_columns(df: pd.DataFrame, required_columns: list) -> bool:
     :param required_columns: List of column names that must exist
     :return: True if all required columns exist, False otherwise
     '''
-
     missing = [col for col in required_columns if col not in df.columns]
     if missing:
-        print(f"[ERROR] Missing required columns: {missing}")
+        logger.error(f"Missing required columns: {missing}")
         return False
     return True
 
