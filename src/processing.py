@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @handle_exceptions
 @log_step
 def load_and_clean(file_path: str, required_columns: list) -> pd.DataFrame:
@@ -45,20 +46,33 @@ def summarize_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, pd.DataFra
     :param df: Cleaned DataFrame with required columns.
     :return: Tuple of (summary DataFrame, dict of account DataFrames).
     """
-    summary_df = df.groupby(
-        ['Account']
-    )[['Amount in doc. curr.', 'Amount in local currency']].sum().reset_index()
+    # Define the aggregation rules for each column
+    agg_rules = {
+        'Amount in doc. curr.': 'sum',
+        'Amount in local currency': 'sum',
+        'Comapany': 'first',
+        'Document currency': 'first',
+        'Local Currency': 'first'
+    }
+
+    # Group by 'Account' ONLY, and apply the different rules using .agg()
+    summary_df = df.groupby('Account').agg(agg_rules).reset_index()
+
+    column_order = [
+        'Comapany',
+        'Account',
+        'Document currency',
+        'Amount in doc. curr.',
+        'Local Currency',
+        'Amount in local currency'
+    ]
+    summary_df = summary_df[column_order]
 
     accounts = df['Account'].unique()
     account_data_dict = {acc: df[df['Account'] == acc].copy() for acc in accounts}
 
-    # Drop 'Entry Date' if exists
     for acc in account_data_dict:
         if 'Entry Date' in account_data_dict[acc].columns:
             account_data_dict[acc] = account_data_dict[acc].drop(columns=['Entry Date'])
-
-    # --debugging
-    print("Unique accounts in summary:", summary_df['Account'].nunique())
-    print("Total rows in summary:", len(summary_df))
 
     return summary_df, account_data_dict

@@ -23,7 +23,7 @@ CORS(app)
 # Configure app
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///document_processor.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['OUTPUT_FOLDER'] = 'outputs'
 
@@ -90,12 +90,30 @@ def save_to_database(job_id, summary_df, account_data_dict):
     try:
         # Save summary data
         for _, row in summary_df.iterrows():
+            # Get the account number from the current summary row
+            account = str(row['Account'])
+
+            # Find the detailed DataFrame for this account in the dictionary
+            if account in account_data_dict and not account_data_dict[account].empty:
+                # Get the detailed DataFrame for this specific account
+                account_df = account_data_dict[account]
+
+                # Get the company, document currency, and local currency from the first row of the detailed data
+                company_name = account_df['Comapany'].iloc[0]
+                doc_currency = account_df['Document currency'].iloc[0]
+                local_curr = account_df['Local Currency'].iloc[0]
+            else:
+                # Fallback in case account is not found or empty
+                company_name = 'Unknown'
+                doc_currency = 'N/A'
+                local_curr = 'N/A'
+
             summary_record = SummaryData(
                 job_id=job_id,
-                company=str(row['Comapany']),
+                company=str(company_name),
                 account=str(row['Account']),
-                document_currency=str(row['Document currency']),
-                local_currency=str(row['Local Currency']),
+                document_currency=str(doc_currency),
+                local_currency=str(local_curr),
                 amount_doc_curr=float(row['Amount in doc. curr.']),
                 amount_local_curr=float(row['Amount in local currency'])
             )
@@ -105,17 +123,17 @@ def save_to_database(job_id, summary_df, account_data_dict):
         for account, df in account_data_dict.items():
             for _, row in df.iterrows():
                 # Calculate document ageing
+                doc_date = None
+                ageing = None
                 if pd.notna(row['Document Date']):
                     doc_date = pd.to_datetime(row['Document Date']).date()
                     ageing = (datetime.now().date() - doc_date).days
-                else:
-                    ageing = None
 
                 account_record = AccountData(
                     job_id=job_id,
                     account=str(account),
                     company=str(row['Comapany']),
-                    document_date=doc_date if pd.notna(row['Document Date']) else None,
+                    document_date=doc_date,
                     document_currency=str(row['Document currency']),
                     local_currency=str(row['Local Currency']),
                     amount_doc_curr=float(row['Amount in doc. curr.']),
@@ -127,11 +145,9 @@ def save_to_database(job_id, summary_df, account_data_dict):
         db.session.commit()
         return True
     except Exception as e:
-        logger.error(f"Database save error: {str(e)}")
+        logger.error(f"Database save error: {str(e)}", exc_info=True)
         db.session.rollback()
         return False
-
-
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     """Handle file upload and processing"""
