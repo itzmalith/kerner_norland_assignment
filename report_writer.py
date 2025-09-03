@@ -8,6 +8,15 @@ from typing import Dict
 
 @log_step
 def style_sheet(sheet, df: pd.DataFrame, bold=True, header_fill_color="B7DEE8"):
+    '''
+        Applies formatting to an Excel sheet
+
+        :param sheet: openpyxl worksheet to style.
+        :param df: DataFrame corresponding to this sheet.
+        :param bold: Whether to make header text bold.
+        :param header_fill_color: Fill color for header row.
+        :return: None
+    '''
     bold_font = Font(bold=bold)
     fill = PatternFill(start_color=header_fill_color, end_color=header_fill_color, fill_type="solid")
     alignment = Alignment(horizontal="center", vertical="center")
@@ -27,6 +36,15 @@ def style_sheet(sheet, df: pd.DataFrame, bold=True, header_fill_color="B7DEE8"):
 
 @log_step
 def write_report(summary_df: pd.DataFrame, account_data_dict: Dict[str, pd.DataFrame], output_path: str):
+    '''
+     Writes the summary and per-account data to an Excel report
+     Adds styling, Doc Ageing formula, and totals row
+
+     :param summary_df: DataFrame containing summarized data
+     :param account_data_dict: Dictionary mapping account to its DataFrame
+     :param output_path: Path where the final Excel file will be saved
+     :return: None
+    '''
     from openpyxl import load_workbook
 
     # Write raw data first

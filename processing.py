@@ -5,6 +5,13 @@ from typing import Tuple, Dict
 
 @log_step
 def load_and_clean(file_path: str, required_columns: list) -> pd.DataFrame:
+    '''
+        Loads an Excel file and cleans its data:
+
+        :param file_path: Path to input Excel file.
+        :param required_columns: List of columns expected in the file.
+        :return: Cleaned DataFrame or empty DataFrame if invalid.
+    '''
 
     df = pd.read_excel(file_path, engine='xlrd')
     missing_cols = [col for col in required_columns if col not in df.columns]
@@ -21,6 +28,12 @@ def load_and_clean(file_path: str, required_columns: list) -> pd.DataFrame:
 
 @log_step
 def summarize_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, pd.DataFrame]]:
+    '''
+        Summarizes data by grouping and splitting by account:
+
+        :param df: Cleaned DataFrame with required columns.
+        :return: Tuple of (summary DataFrame, dict of account DataFrames).
+    '''
 
     summary_df = df.groupby(
         ['Comapany', 'Account', 'Document currency', 'Local Currency']
