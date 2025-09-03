@@ -2,7 +2,7 @@ from pathlib import Path
 
 # Input and output file paths
 BASE_DIR = Path(
-    "/Users/malithlekamge/Developer/Automation Engineer/kerner_norland_assignment/python_automation_assignment/sheets")
+    "files")
 INPUT_FILE = BASE_DIR / "export.xls"
 OUTPUT_FILE = BASE_DIR / "Final_Report.xlsx"
 

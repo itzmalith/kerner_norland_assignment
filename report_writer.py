@@ -84,6 +84,7 @@ def write_report(summary_df: pd.DataFrame, account_data_dict: Dict[str, pd.DataF
             sheet.cell(row=totals_row, column=amt_loc_col_idx,
                        value=f"=SUM({loc_col_letter}2:{loc_col_letter}{sheet.max_row - 1})").font = Font(bold=True)
 
+
     # Style summary sheet
     summary_sheet = workbook['Summary']
     summary_sheet['A1'] = 'Document Ageing Report'
